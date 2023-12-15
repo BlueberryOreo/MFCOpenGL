@@ -49,6 +49,44 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 	this->cz = cz;
 	this->r = r;
 
+}
+
+MyBall::~MyBall()
+{
+	for (auto vertex : vertexes) delete vertex;
+	for (auto edge : edgeHead) {
+		while (edge != NULL) {
+			Edge* tmp = edge;
+			edge = edge->next;
+			delete tmp;
+		}
+	}
+	for (auto edge : midEdges) delete edge;
+	for (auto face : faces) delete face;
+}
+
+void MyBall::setCX(double cx)
+{
+	this->cx = cx;
+}
+
+void MyBall::setCY(double cy)
+{
+	this->cy = cy;
+}
+
+void MyBall::setCZ(double cz)
+{
+	this->cz = cz;
+}
+
+void MyBall::setR(double r)
+{
+	this->r = r;
+}
+
+void MyBall::draw()
+{
 	int thetax, thetay;
 	thetax = thetay = 0;
 
@@ -86,7 +124,7 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 				Edge* bottomEdge = new Edge(leftHead->v2, rightHead->v2, NULL, NULL);
 				midEdges.push_back(bottomEdge);
 				Face* f = new Face(leftHead, bottomEdge, rightHead);
-				cross(*f->e1, *f->e2, f->normal);
+				//cross(*f->e1, *f->e2, f->normal);
 				leftHead->right = bottomEdge->left = rightHead->left = f;
 				faces.push_back(f);
 			}
@@ -109,8 +147,8 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 					leftHead->right = split->left = topEdge->right = upFace;
 					split->right = bottomEdge->left = rightHead->left = downFace;
 				}
-				cross(*upFace->e1, *upFace->e2, upFace->normal);
-				cross(*downFace->e1, *downFace->e2, downFace->normal);
+				//cross(*upFace->e1, *upFace->e2, upFace->normal);
+				//cross(*downFace->e1, *downFace->e2, downFace->normal);
 				faces.push_back(upFace);
 				faces.push_back(downFace);
 				midEdges.push_back(bottomEdge);
@@ -124,7 +162,7 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 		rightHead->v2 = bottom;
 		Edge* topEdge = faces.back()->e2;
 		Face* lastFace = new Face(leftHead, rightHead, topEdge);
-		cross(*lastFace->e1, *lastFace->e2, lastFace->normal);
+		//cross(*lastFace->e1, *lastFace->e2, lastFace->normal);
 		leftHead->right = rightHead->left = topEdge->right = lastFace;
 		faces.push_back(lastFace);
 	}
@@ -136,14 +174,14 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 			Edge* bottomEdge = new Edge(leftHead->v2, rightHead->v2, NULL, NULL);
 			midEdges.push_back(bottomEdge);
 			Face* f = new Face(leftHead, bottomEdge, rightHead);
-			cross(*f->e1, *f->e2, f->normal);
+			//cross(*f->e1, *f->e2, f->normal);
 			leftHead->right = bottomEdge->left = rightHead->left = f;
 			faces.push_back(f);
 		}
 		else if (leftHead->v2 == rightHead->v2) {
 			Edge* topEdge = faces.back()->e2;
 			Face* f = new Face(leftHead, rightHead, topEdge);
-			cross(*f->e1, *f->e2, f->normal);
+			//cross(*f->e1, *f->e2, f->normal);
 			leftHead->right = rightHead->left = topEdge->right = f;
 			faces.push_back(f);
 		}
@@ -166,8 +204,8 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 				leftHead->right = split->left = topEdge->right = upFace;
 				split->right = bottomEdge->left = rightHead->left = downFace;
 			}
-			cross(*upFace->e1, *upFace->e2, upFace->normal);
-			cross(*downFace->e1, *downFace->e2, downFace->normal);
+			//cross(*upFace->e1, *upFace->e2, upFace->normal);
+			//cross(*downFace->e1, *downFace->e2, downFace->normal);
 			faces.push_back(upFace);
 			faces.push_back(downFace);
 			midEdges.push_back(bottomEdge);
@@ -177,40 +215,6 @@ MyBall::MyBall(double cx, double cy, double cz, double r)
 		rightHead = rightHead->next;
 		flag ^= 1;
 	}
-}
-
-MyBall::~MyBall()
-{
-	for (auto vertex : vertexes) delete vertex;
-	for (auto edge : edgeHead) {
-		while (edge != NULL) {
-			Edge* tmp = edge;
-			edge = edge->next;
-			delete tmp;
-		}
-	}
-	for (auto edge : midEdges) delete edge;
-	for (auto face : faces) delete face;
-}
-
-void MyBall::setCX(double cx)
-{
-	this->cx = cx;
-}
-
-void MyBall::setCY(double cy)
-{
-	this->cy = cy;
-}
-
-void MyBall::setCZ(double cz)
-{
-	this->cz = cz;
-}
-
-void MyBall::setR(double r)
-{
-	this->r = r;
 }
 
 std::vector<Face*> MyBall::getFaces()
@@ -228,6 +232,10 @@ Vertex::Vertex(double x, double y, double z)
 	this->x = x;
 	this->y = y;
 	this->z = z;
+	double norm = sqrt(x * x + y * y + z * z);
+	this->nx = x / norm;
+	this->ny = y / norm;
+	this->nz = z / norm;
 }
 
 bool Vertex::operator==(const Vertex& v)
@@ -254,7 +262,7 @@ Edge::Edge(Vertex* v1, Vertex* v2, Face* left, Face* right)
 Face::Face()
 {
 	this->e1 = this->e2 = this->e3 = NULL;
-	this->normal = {0, 0, 0};
+	//this->normal = {0, 0, 0};
 }
 
 Face::Face(Edge* e1, Edge* e2, Edge* e3)

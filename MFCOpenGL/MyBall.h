@@ -10,6 +10,7 @@ class Face;
 class Vertex {
 public:
 	double x, y, z;
+	double nx, ny, nz;
 	Vertex(double x, double y, double z);
 	bool operator==(const Vertex &v);
 };
@@ -27,7 +28,7 @@ public:
 class Face {
 public:
 	Edge* e1, *e2, *e3;
-	std::vector<double> normal;
+	//std::vector<double> normal;
 	Face();
 	Face(Edge *e1, Edge *e2, Edge *e3);
 };
@@ -56,6 +57,7 @@ public:
 	void setCY(double cy);
 	void setCZ(double cz);
 	void setR(double r);
+	void draw();
 	std::vector<Face*> getFaces();
 	std::vector<Vertex*> getVertexes();
 };

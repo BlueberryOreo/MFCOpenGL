@@ -5,11 +5,19 @@
 #include "MyBall.h"
 
 struct Light {
-	GLfloat specular[4]; // 镜面反射参数
+	GLfloat ambient[4]; //环境光参数
 	GLfloat diffuse[4]; //漫反射参数
+	GLfloat specular[4]; // 镜面反射参数
 	GLfloat shininess[1]; // 高光
-	GLfloat Light_Model_Ambient[4]; //环境光参数
 	GLfloat lightPos[4]; //光源位置
+};
+
+struct Material {
+	GLfloat ambient[4];
+	GLfloat diffuse[4];
+	GLfloat specular[4];
+	GLfloat shininess[1];
+	GLfloat emission[4];
 };
 
 class MyOpenGL
@@ -25,12 +33,17 @@ private:
 	void drawFace(Face *f);
 	double d2r(double digit);
 	Vertex getVertex();
+	//void normalize(std::vector<double> &v);
 
 	Light light;
+	Material material;
 
+	double cx = 1.0, cy = 1.0, cz = -2.0;
 	int thetax, thetay;
-	double r;
+	double r = 10;
 	bool move = 1;
+	int theta = 0;
+	const double CNEAR = 1.0, CFAR = 11.0;
 
 public:
 	MyOpenGL();
