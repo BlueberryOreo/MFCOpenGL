@@ -11,7 +11,8 @@ class Vertex {
 public:
 	double x, y, z;
 	double nx, ny, nz;
-	Vertex(double x, double y, double z);
+	double thetax, thetay;
+	Vertex(double x, double y, double z, double thetax, double thetay);
 	bool operator==(const Vertex &v);
 };
 
@@ -50,13 +51,14 @@ private:
 	int step = 1;
 
 public:
-	MyBall(double cx=0, double cy=0, double cz=0, double r=1);
+	MyBall(double cx=0, double cy=0, double cz=0, double r=1, int step=1);
 	~MyBall();
 
 	void setCX(double cx);
 	void setCY(double cy);
 	void setCZ(double cz);
 	void setR(double r);
+	void setStep(int step);
 	void draw();
 	std::vector<Face*> getFaces();
 	std::vector<Vertex*> getVertexes();

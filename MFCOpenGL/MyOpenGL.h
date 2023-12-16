@@ -2,6 +2,7 @@
 
 #include <GL/gl.h>
 #include <GL/glut.h>
+
 #include "MyBall.h"
 
 struct Light {
@@ -28,12 +29,14 @@ private:
 	//	GLint winWidth, winHeight;
 	double winAspect;
 	MyBall ball;
+	GLuint texture;
 
 	void drawEdge(Edge *e);
 	void drawFace(Face *f);
 	double d2r(double digit);
 	Vertex getVertex();
 	//void normalize(std::vector<double> &v);
+	void loadTexture(const char *filePath, bool rgb=true);
 
 	Light light;
 	Material material;
@@ -44,6 +47,8 @@ private:
 	bool move = 1;
 	int theta = 0;
 	const double CNEAR = 1.0, CFAR = 11.0;
+	int step = 1;
+	bool roundFlag = false;
 
 public:
 	MyOpenGL();

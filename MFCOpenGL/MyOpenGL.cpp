@@ -1,13 +1,43 @@
 #include "pch.h"
 #include "MyOpenGL.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 void MyOpenGL::drawEdge(Edge* e)
 {
-	glColor3f(e->color[0], e->color[1], e->color[2]);
-	glNormal3f(e->v1->nx, e->v1->ny, e->v1->nz);
-	glVertex3f(e->v1->x, e->v1->y, e->v1->z);
-	glNormal3f(e->v2->nx, e->v2->ny, e->v2->nz);
-	glVertex3f(e->v2->x, e->v2->y, e->v2->z);
+	//glColor3f(e->color[0], e->color[1], e->color[2]);
+	Vertex* v1 = e->v1, * v2 = e->v2;
+	int thetax1 = v1->thetax, thetay1 = v1->thetay;
+	int thetax2 = v2->thetax, thetay2 = v2->thetay;
+	if (thetax1 == 0 && (thetax2 == 360 - step)) {
+		thetax1 = 360;
+		roundFlag = true;
+	}
+	else if ((thetax1 == 360 - step) && thetax2 == 0) {
+		thetax2 = 360;
+		roundFlag = true;
+	}
+	if (!roundFlag) {
+		if (thetax1 == 0) {
+			thetax1 = thetax2;
+		}
+		else if (thetax2 == 0) {
+			thetax2 = thetax1;
+		}
+	}
+	else {
+		if (thetax1 == 0 && thetax2 == 0) {
+			thetax1 = thetax2 = 360;
+			roundFlag = false;
+		}
+	}
+
+	glNormal3f(v1->nx, v1->ny, v1->nz);
+	glTexCoord2f(static_cast<float>(thetax1) / 360, static_cast<float>(thetay1) / 180);
+	glVertex3f(v1->x, v1->y, v1->z);
+	glNormal3f(v2->nx, v2->ny, v2->nz);
+	glTexCoord2f(static_cast<float>(thetax2) / 360, static_cast<float>(thetay2) / 180);
+	glVertex3f(v2->x, v2->y, v2->z);
 }
 
 void MyOpenGL::drawFace(Face* f)
@@ -35,8 +65,31 @@ Vertex MyOpenGL::getVertex()
 	double tmp = r * sin(d2r(90 - thetay));
 	double x = tmp * cos(d2r(thetax)) + cx;
 	double y = tmp * sin(d2r(thetax)) + cy;
-	Vertex newVertex(x, y, z);
+	Vertex newVertex(x, y, z, 0, 0);
 	return newVertex;
+}
+
+void MyOpenGL::loadTexture(const char* filePath, bool rgb)
+{
+	int width, height, channels;
+	unsigned char* image;
+	if (rgb) image = stbi_load(filePath, &width, &height, &channels, 0);
+	else image = stbi_load(filePath, &width, &height, &channels, 1);
+
+	if (!image) {
+		exit(EXIT_FAILURE);
+	}
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+	stbi_image_free(image);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 //void MyOpenGL::normalize(std::vector<double>& v)
@@ -53,6 +106,7 @@ MyOpenGL::MyOpenGL()
 	ball.setCY(0.0);
 	ball.setCZ(0.0);
 	ball.setR(5);
+	ball.setStep(step);
 	ball.draw();
 
 	thetax = 90;
@@ -63,15 +117,15 @@ MyOpenGL::MyOpenGL()
 		{0.2, 0.2, 0.2, 1.0},
 		{1.0, 1.0, 1.0, 1.0},
 		{1.0, 1.0, 1.0, 1.0},
-		{100.0},
-		{ 0.0, 0.0, 5.0, 0.0 }
+		{50.0},
+		{ 0.0, 1.0, 2.0, 0.0 }
 	};
 
 	material = {
 		{0.250000, 0.250000, 0.250000, 1.000000},
 		{0.400000, 0.400000, 0.400000, 1.000000},
 		{0.774597, 0.774597, 0.774597, 1.000000},
-		{76.800003},
+		{10.0},
 		{0.0, 0.0, 0.0, 1.0}
 	};
 }
@@ -123,6 +177,7 @@ bool MyOpenGL::SetupPixelFormat(HDC hdc)
 void MyOpenGL::Init(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	loadTexture("E:\\Progress\\CG\\texture\\8081_earthmap4k.jpg");
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Vertex cam = getVertex();
@@ -136,13 +191,13 @@ void MyOpenGL::Render(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-2.5, 2.5, -2.5 / winAspect, 2.5 / winAspect, CNEAR, CFAR);					//1：一般透视投影 +3.0~-15.0范围内可见
+	glFrustum(-2.5, 2.5, -2.5 / winAspect, 2.5 / winAspect, CNEAR, CFAR);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Vertex cam = getVertex();
 	gluLookAt(cam.x, cam.y, cam.z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	//thetax = (thetax + move * 2) % 360;
+	//thetax = (thetax - move * 2) % 360;
 
 	// 材质设置
 	glMaterialfv(GL_FRONT, GL_SPECULAR, material.specular);
@@ -160,21 +215,22 @@ void MyOpenGL::Render(void)
 	glEnable(GL_LIGHTING);   //开灯
 	glEnable(GL_DEPTH_TEST); //打开深度测试
 
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
 	glTranslatef(cx, cy, cz);
 	theta = (theta + move * 2) % 360;
 	light.lightPos[0] = cx + sin(d2r(theta)) * r;
 	light.lightPos[1] = cy + cos(d2r(theta)) * r;
 
 	glColor3f(1.0, 1.0, 1.0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	//std::vector<Vertex*> vertexes = ball.getVertexes();
 	std::vector<Face*> faces = ball.getFaces();
 	for (auto f: faces) {
 		drawFace(f);
 	}
+	glDisable(GL_TEXTURE_2D);
 
-	glFlush();
+	//glFlush();
 	SwapBuffers(hDC);
 }
 
@@ -185,9 +241,7 @@ void MyOpenGL::Reshape(int width, int height)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-2.5, 2.5, -2.5 / winAspect, 2.5 / winAspect, CNEAR, CFAR);					//1：一般透视投影 +3.0~-15.0范围内可见
-	//	gluPerspective(90.0, winAspect, 2.0, 20.0);			//2：对称透视投影 +3.0~-15.0范围内可见
-		//glOrtho(-2.5,2.5, -2.5 / winAspect, 2.5 / winAspect, CNEAR, CFAR);			//3：正投影  +3.0~-15.0范围内可见
+	glFrustum(-2.5, 2.5, -2.5 / winAspect, 2.5 / winAspect, CNEAR, CFAR);
 
 }
 

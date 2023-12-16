@@ -12,7 +12,7 @@ Vertex* MyBall::getVertex(int thetax, int thetay)
 	double tmp = r * sin(d2r(thetay));
 	double x = cx + tmp * cos(d2r(thetax));
 	double y = cy + tmp * sin(d2r(thetax));
-	Vertex* newVertex = new Vertex(x, y, z);
+	Vertex* newVertex = new Vertex(x, y, z, thetax, thetay);
 	this->vertexes.push_back(newVertex);
 	return newVertex;
 }
@@ -42,13 +42,13 @@ void MyBall::cross(const Edge& e1, const Edge& e2, std::vector<double>& res) con
 	}
 }
 
-MyBall::MyBall(double cx, double cy, double cz, double r)
+MyBall::MyBall(double cx, double cy, double cz, double r, int step)
 {
 	this->cx = cx;
 	this->cy = cy;
 	this->cz = cz;
 	this->r = r;
-
+	this->step = step;
 }
 
 MyBall::~MyBall()
@@ -85,13 +85,18 @@ void MyBall::setR(double r)
 	this->r = r;
 }
 
+void MyBall::setStep(int step)
+{
+	this->step = step;
+}
+
 void MyBall::draw()
 {
 	int thetax, thetay;
 	thetax = thetay = 0;
 
-	Vertex* top = new Vertex(cx, cy, cz + r);
-	Vertex* bottom = new Vertex(cx, cy, cz - r);
+	Vertex* top = new Vertex(cx, cy, cz + r, 0, 0);
+	Vertex* bottom = new Vertex(cx, cy, cz - r, 0, 180);
 
 	this->vertexes.push_back(top);
 	this->vertexes.push_back(bottom);
@@ -227,7 +232,7 @@ std::vector<Vertex*> MyBall::getVertexes()
 	return vertexes;
 }
 
-Vertex::Vertex(double x, double y, double z)
+Vertex::Vertex(double x, double y, double z, double thetax, double thetay)
 {
 	this->x = x;
 	this->y = y;
@@ -236,6 +241,8 @@ Vertex::Vertex(double x, double y, double z)
 	this->nx = x / norm;
 	this->ny = y / norm;
 	this->nz = z / norm;
+	this->thetax = thetax;
+	this->thetay = thetay;
 }
 
 bool Vertex::operator==(const Vertex& v)
