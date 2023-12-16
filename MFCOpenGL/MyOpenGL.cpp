@@ -177,7 +177,7 @@ bool MyOpenGL::SetupPixelFormat(HDC hdc)
 void MyOpenGL::Init(void)
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	loadTexture("E:\\Progress\\CG\\texture\\8081_earthmap4k.jpg");
+	loadTexture(".\\texture\\8081_earthmap4k.jpg");
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	Vertex cam = getVertex();
