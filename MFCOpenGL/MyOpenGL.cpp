@@ -245,11 +245,6 @@ void MyOpenGL::Reshape(int width, int height)
 
 }
 
-void MyOpenGL::setEye(double dx, double dy)
-{
-
-}
-
 void MyOpenGL::swapMove()
 {
 	move ^= 1;

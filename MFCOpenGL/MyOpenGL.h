@@ -59,7 +59,7 @@ public:
 	void Render(void);							//绘制代码
 
 	void Reshape(int width, int height);		//改变窗口大小时对视窗进行的操作
-	void setEye(double dx, double dy);
+	//void setEye(double dx, double dy);
 	void swapMove();
 	void zoom(bool flag);
 };
